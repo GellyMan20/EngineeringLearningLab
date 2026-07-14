@@ -1,0 +1,4 @@
+strategy,final_mean_affinity,final_best_affinity,final_diversity,prob_reaches_0p90_best_affinity
+Low Mutation,1.0,1.0,0.0,1.0
+Moderate Mutation,1.0,1.0,0.0,1.0
+High Mutation,1.0,1.0,0.0,1.0

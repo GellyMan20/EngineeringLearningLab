@@ -1,0 +1,426 @@
+"""
+Monte Carlo Advanced Methods Example
+
+Includes:
+1. Correlated variables
+2. Latin Hypercube Sampling
+3. Tornado plot sensitivity analysis
+
+System:
+Simple vertical rocket altitude model.
+
+Inputs:
+- Mass
+- Thrust
+- Fuel time
+- Drag coefficient
+
+Output:
+- Maximum altitude
+"""
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+
+
+# ============================================================
+# SETTINGS
+# ============================================================
+
+np.random.seed(42)
+
+N = 5000
+GRAVITY = 9.81
+DT = 0.05
+
+
+# ============================================================
+# ROCKET MODEL
+# ============================================================
+
+def run_rocket_simulation(mass, thrust, fuel_time, drag_coefficient):
+    height = 0.0
+    velocity = 0.0
+    time = 0.0
+    max_height = 0.0
+
+    while True:
+        if time < fuel_time:
+            thrust_accel = thrust / mass
+        else:
+            thrust_accel = 0.0
+
+        drag_accel = drag_coefficient * velocity * abs(velocity) / mass
+
+        if velocity > 0:
+            acceleration = thrust_accel - GRAVITY - drag_accel
+        else:
+            acceleration = thrust_accel - GRAVITY + drag_accel
+
+        velocity += acceleration * DT
+        height += velocity * DT
+        time += DT
+
+        max_height = max(max_height, height)
+
+        if height <= 0 and time > fuel_time:
+            break
+
+        if time > 120:
+            break
+
+    return max_height
+
+
+# ============================================================
+# PART 1 — CORRELATED VARIABLE SAMPLING
+# ============================================================
+
+def generate_correlated_samples(n):
+    """
+    Example correlation idea:
+
+    Heavier rockets tend to have:
+    - slightly higher thrust
+    - slightly longer fuel burn time
+
+    This is realistic because a bigger propulsion package may
+    increase both mass and impulse.
+    """
+
+    means = np.array([
+        1.00,   # mass, kg
+        15.0,   # thrust, N
+        5.00,   # fuel time, s
+        0.020   # drag coefficient
+    ])
+
+    stds = np.array([
+        0.08,
+        1.50,
+        0.45,
+        0.004
+    ])
+
+    correlation_matrix = np.array([
+        [1.00,  0.60,  0.45,  0.10],
+        [0.60,  1.00,  0.50,  0.05],
+        [0.45,  0.50,  1.00,  0.00],
+        [0.10,  0.05,  0.00,  1.00]
+    ])
+
+    covariance_matrix = np.diag(stds) @ correlation_matrix @ np.diag(stds)
+
+    samples = np.random.multivariate_normal(
+        mean=means,
+        cov=covariance_matrix,
+        size=n
+    )
+
+    df = pd.DataFrame(
+        samples,
+        columns=["mass", "thrust", "fuel_time", "drag_coefficient"]
+    )
+
+    df["mass"] = df["mass"].clip(0.6, 1.5)
+    df["thrust"] = df["thrust"].clip(8.0, 25.0)
+    df["fuel_time"] = df["fuel_time"].clip(2.0, 8.0)
+    df["drag_coefficient"] = df["drag_coefficient"].clip(0.005, 0.050)
+
+    return df
+
+
+# ============================================================
+# PART 2 — LATIN HYPERCUBE SAMPLING
+# ============================================================
+
+def latin_hypercube_normal(n, means, stds):
+    """
+    Latin Hypercube Sampling:
+
+    Instead of randomly drawing all points freely,
+    each input distribution is divided into N probability bands.
+
+    One sample is drawn from each band.
+
+    This gives better coverage than plain random sampling,
+    especially when N is smaller.
+    """
+
+    num_variables = len(means)
+    lhs = np.zeros((n, num_variables))
+
+    for j in range(num_variables):
+        probability_bins = (np.arange(n) + np.random.random(n)) / n
+        np.random.shuffle(probability_bins)
+
+        lhs[:, j] = norm.ppf(
+            probability_bins,
+            loc=means[j],
+            scale=stds[j]
+        )
+
+    return lhs
+
+
+def generate_lhs_samples(n):
+    means = np.array([1.00, 15.0, 5.00, 0.020])
+    stds = np.array([0.08, 1.50, 0.45, 0.004])
+
+    lhs_samples = latin_hypercube_normal(n, means, stds)
+
+    df = pd.DataFrame(
+        lhs_samples,
+        columns=["mass", "thrust", "fuel_time", "drag_coefficient"]
+    )
+
+    df["mass"] = df["mass"].clip(0.6, 1.5)
+    df["thrust"] = df["thrust"].clip(8.0, 25.0)
+    df["fuel_time"] = df["fuel_time"].clip(2.0, 8.0)
+    df["drag_coefficient"] = df["drag_coefficient"].clip(0.005, 0.050)
+
+    return df
+
+
+# ============================================================
+# RUN MONTE CARLO
+# ============================================================
+
+def run_campaign(samples_df, campaign_name):
+    max_heights = []
+
+    for _, row in samples_df.iterrows():
+        max_height = run_rocket_simulation(
+            mass=row["mass"],
+            thrust=row["thrust"],
+            fuel_time=row["fuel_time"],
+            drag_coefficient=row["drag_coefficient"]
+        )
+
+        max_heights.append(max_height)
+
+    samples_df = samples_df.copy()
+    samples_df["max_height"] = max_heights
+    samples_df["campaign"] = campaign_name
+
+    return samples_df
+
+
+correlated_samples = generate_correlated_samples(N)
+lhs_samples = generate_lhs_samples(N)
+
+correlated_results = run_campaign(correlated_samples, "Correlated Monte Carlo")
+lhs_results = run_campaign(lhs_samples, "Latin Hypercube Sampling")
+
+all_results = pd.concat(
+    [correlated_results, lhs_results],
+    ignore_index=True
+)
+
+
+# ============================================================
+# SUMMARY STATISTICS
+# ============================================================
+
+summary = all_results.groupby("campaign")["max_height"].describe()
+
+print("\nMONTE CARLO SUMMARY")
+print(summary)
+
+print("\nINPUT CORRELATION MATRIX — CORRELATED CASE")
+print(correlated_results[
+    ["mass", "thrust", "fuel_time", "drag_coefficient"]
+].corr())
+
+print("\nINPUT CORRELATION MATRIX — LHS CASE")
+print(lhs_results[
+    ["mass", "thrust", "fuel_time", "drag_coefficient"]
+].corr())
+
+
+# ============================================================
+# PLOT 1 — COMPARE OUTPUT DISTRIBUTIONS
+# ============================================================
+
+plt.figure(figsize=(10, 6))
+
+plt.hist(
+    correlated_results["max_height"],
+    bins=60,
+    alpha=0.55,
+    label="Correlated Monte Carlo",
+    density=True
+)
+
+plt.hist(
+    lhs_results["max_height"],
+    bins=60,
+    alpha=0.55,
+    label="Latin Hypercube Sampling",
+    density=True
+)
+
+plt.title("Rocket Maximum Altitude Distribution")
+plt.xlabel("Maximum Altitude")
+plt.ylabel("Density")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# PLOT 2 — CORRELATED INPUTS EXAMPLE
+# ============================================================
+
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    correlated_results["mass"],
+    correlated_results["thrust"],
+    s=8,
+    alpha=0.35
+)
+
+plt.title("Example of Correlated Variables: Mass vs Thrust")
+plt.xlabel("Mass")
+plt.ylabel("Thrust")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# PLOT 3 — LHS COVERAGE EXAMPLE
+# ============================================================
+
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    lhs_results["mass"],
+    lhs_results["thrust"],
+    s=8,
+    alpha=0.35
+)
+
+plt.title("Latin Hypercube Sampling Coverage: Mass vs Thrust")
+plt.xlabel("Mass")
+plt.ylabel("Thrust")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# PART 3 — TORNADO PLOT
+# ============================================================
+
+def tornado_sensitivity_analysis(base_case):
+    """
+    Tornado plot method:
+
+    Hold everything at nominal values.
+    Change one variable low/high.
+    Measure output swing.
+
+    Bigger swing = more sensitive variable.
+    """
+
+    variables = {
+        "mass": {
+            "low": 0.90,
+            "high": 1.10
+        },
+        "thrust": {
+            "low": 13.0,
+            "high": 17.0
+        },
+        "fuel_time": {
+            "low": 4.3,
+            "high": 5.7
+        },
+        "drag_coefficient": {
+            "low": 0.012,
+            "high": 0.028
+        }
+    }
+
+    base_output = run_rocket_simulation(**base_case)
+
+    rows = []
+
+    for variable, bounds in variables.items():
+        low_case = base_case.copy()
+        high_case = base_case.copy()
+
+        low_case[variable] = bounds["low"]
+        high_case[variable] = bounds["high"]
+
+        low_output = run_rocket_simulation(**low_case)
+        high_output = run_rocket_simulation(**high_case)
+
+        rows.append({
+            "variable": variable,
+            "low_output": low_output,
+            "high_output": high_output,
+            "swing": abs(high_output - low_output)
+        })
+
+    tornado_df = pd.DataFrame(rows)
+    tornado_df = tornado_df.sort_values("swing", ascending=True)
+
+    return tornado_df, base_output
+
+
+base_case = {
+    "mass": 1.00,
+    "thrust": 15.0,
+    "fuel_time": 5.00,
+    "drag_coefficient": 0.020
+}
+
+tornado_df, base_output = tornado_sensitivity_analysis(base_case)
+
+print("\nTORNADO SENSITIVITY TABLE")
+print(tornado_df)
+
+
+# ============================================================
+# PLOT 4 — TORNADO PLOT
+# ============================================================
+
+plt.figure(figsize=(9, 6))
+
+for _, row in tornado_df.iterrows():
+    low = row["low_output"]
+    high = row["high_output"]
+
+    plt.plot(
+        [low, high],
+        [row["variable"], row["variable"]],
+        linewidth=8
+    )
+
+plt.axvline(base_output, linestyle="--", label="Base Case")
+
+plt.title("Tornado Plot: Sensitivity of Max Altitude")
+plt.xlabel("Maximum Altitude")
+plt.ylabel("Input Variable")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# SAVE RESULTS
+# ============================================================
+
+all_results.to_csv("advanced_monte_carlo_results.csv", index=False)
+tornado_df.to_csv("tornado_sensitivity_results.csv", index=False)
+
+print("\nSaved files:")
+print("advanced_monte_carlo_results.csv")
+print("tornado_sensitivity_results.csv")

@@ -1,0 +1,36 @@
+
+WEEK 4 MONTE CARLO FRAMEWORK REPORT
+
+Objective:
+Simulate uncertain engineering systems using Monte Carlo methods.
+
+Number of samples:
+10000
+
+Projectile Analysis:
+Target distance: 1000 m
+Hit tolerance: ±75 m
+Hit probability: 53.76%
+
+Rocket Analysis:
+Mass distribution: N(1.0, 0.05)
+Thrust distribution: N(15.0, 1.0)
+Fuel time distribution: N(5.0, 0.3)
+
+Mean max height:
+103.15 m
+
+95% max height range:
+45.07 m to 182.60 m
+
+Safe landing limit:
+5.0 m/s
+
+Failure rate:
+100.00%
+
+Engineering conclusion:
+Monte Carlo simulation allows us to estimate performance variation,
+failure probability, and sensitivity to uncertain inputs. In this simulation,
+fuel time and thrust strongly influence maximum height. The failure region
+shows where uncertain input combinations lead to unacceptable outcomes.

@@ -1,0 +1,5 @@
+scenario,mean_peak_infected,p95_peak_infected,mean_day_of_peak,mean_total_recovered_or_removed,prob_exceeds_capacity
+Baseline,2606.416,2758.05,105.926,9075.106,1.0
+Social Distancing,937.808,1224.1499999999999,158.462,2148.44,0.962
+Vaccination,1271.67,1370.0,139.538,7257.35,1.0
+Combined,117.622,209.0,154.798,3370.214,0.0

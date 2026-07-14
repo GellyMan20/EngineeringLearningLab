@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def body_to_world(vector_body, heading_rad):
     """
     Convert a vector from the vehicle's body frame into the world frame.
