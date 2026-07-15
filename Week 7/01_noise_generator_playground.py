@@ -1,3 +1,10 @@
+# Purpose:
+# This script demonstrates the simulation of different types of sensor errors
+# (e.g., white noise, bias, random walk, drift, and quantization) using a "true"
+# sine wave signal as the baseline. The goal is to visualize how each error type
+# deviates from the true signal to better understand the effects of sensor imperfections.
+# The output is a plot showing the true signal and simulated signals with introduced errors.
+
 # Import the necessary libraries
 import numpy as np  # For numerical operations and random number generation
 import matplotlib.pyplot as plt  # For plotting graphs
@@ -37,10 +44,10 @@ def main():
     plt.title('Common Sensor Error Types')  # Set the title of the plot
     plt.xlabel('Time [s]')  # Label the x-axis as time
     plt.ylabel('Measurement')  # Label the y-axis as measurement/signal
-
+    
     # Add a grid to the plot for better readability
     plt.grid(True)
-
+    
     # Add a legend to differentiate between signals
     plt.legend()
     
