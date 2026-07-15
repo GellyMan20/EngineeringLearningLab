@@ -1,173 +1,231 @@
-
 # Week 6 Reference Sheet — Guidance & Trajectory Generation
 
-> **Purpose:** This document is a quick-reference guide for the mathematical foundations, engineering intuition, and practical applications of guidance and trajectory generation. It complements the Week 6 Python projects and serves as a condensed reference while studying autonomous navigation.
+## **Purpose**  
+This document serves as a quick-reference guide for the mathematical foundations, engineering intuition, and practical applications of guidance and trajectory generation. It complements the Week 6 Python projects and acts as a condensed reference while studying autonomous navigation.
 
-## 1. Guidance vs Navigation vs Control (GNC)
+---
 
-| Discipline | Purpose | Example |
-|---|---|---|
-| Navigation | Estimate where the vehicle is | GPS, IMU, EKF |
-| Guidance | Decide where the vehicle should go | Waypoints, path following |
-| Control | Generate actuator commands | Steering, throttle, elevator |
+## **1. Guidance vs Navigation vs Control (GNC)**
 
-Mission → Planner → Guidance → Controller → Vehicle
+| Discipline | Purpose                           | Example                       |
+|------------|-----------------------------------|-------------------------------|
+| Navigation | Estimate where the vehicle is     | GPS, IMU, EKF                 |
+| Guidance   | Decide where the vehicle should go| Waypoints, path following     |
+| Control    | Generate actuator commands        | Steering, throttle, elevator  |
 
-## 2. Coordinate Frames
+### Workflow:
+**Mission → Planner → Guidance → Controller → Vehicle**
 
-Common frames:
-- World/Inertial
-- Body
-- NED
-- ENU
+- **Navigation** involves state estimation, giving the vehicle knowledge of its current position, velocity, and orientation.
+- **Guidance** decides how to progress to the desired location or goals, such as generating waypoints or determining the best path forward.
+- **Control** executes guidance decisions by adjusting actuators like steering or throttle to follow commands and stay on course.
 
-Position vector:
-p = [x, y]^T
+---
 
-Heading:
-ψ
+## **2. Coordinate Frames**
 
-## 3. Distance
+Understanding coordinate frames is crucial for defining positions, velocities, and orientations consistently.
 
-d = sqrt((x2-x1)^2 + (y2-y1)^2)
+### Common Frames:
+- **World/Inertial**: Fixed global frame, often the reference for absolute positioning.
+- **Body**: The moving local frame attached to the vehicle.
+- **NED (North-East-Down)**: Used in aerospace and UAV navigation.
+- **ENU (East-North-Up)**: Often used in robotics.
 
-Used for waypoint acceptance, obstacle clearance, and mission completion.
+### Key Variables:
+- **Position Vector**:
+  \[
+  p = [x, y]^T
+  \]
+  Represents the 2D position in a given frame.
+- **Heading** (denoted by \( \psi \)): Represents the angular orientation of the vehicle relative to a reference frame.
 
-## 4. Desired Heading
+---
 
-ψd = atan2(yt - y, xt - x)
+## **3. Distance**
 
-Heading error:
+The Euclidean distance between two points \( (x_1, y_1) \) and \( (x_2, y_2) \) is:
+\[
+d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}
+\]
 
-eψ = wrap(ψd − ψ)
+### Applications:
+- Determining if a waypoint has been reached.
+- Checking obstacle clearance.
+- Evaluating mission success.
 
-Wrap angles into [-π, π].
+---
 
-## 5. Waypoint Navigation
+## **4. Desired Heading**
 
-1. Compute distance
-2. Compute desired heading
-3. Compute heading error
-4. Turn vehicle
-5. Repeat
+The desired heading \( \psi_d \) is the angle required to move from the current position \( (x, y) \) to a target position \( (x_t, y_t) \):
+\[
+\psi_d = \text{atan2}(y_t - y, x_t - x)
+\]
 
-## 6. Path Following
+### Heading Error:
+The difference between the desired heading and the current heading \( \psi \):
+\[
+e_\psi = \text{wrap}(\psi_d - \psi)
+\]
+Where wrap ensures that \( e_\psi \) stays within \( [-\pi, \pi] \).
 
-Track a continuous path instead of individual waypoints.
+---
 
-Metrics:
-- Cross-track error
-- Along-track progress
-- Heading error
+## **5. Waypoint Navigation**
 
-## 7. Pure Pursuit
+Navigate through discrete points leading to the goal. Steps:
+1. **Compute distance**: Distance to the current waypoint.
+2. **Compute desired heading**: Direction towards the waypoint.
+3. **Compute heading error**: Difference between current and desired heading.
+4. **Turn the vehicle**: Adjust heading to reduce error.
+5. **Repeat**: Move to the next waypoint once the current waypoint is reached.
 
-Lookahead distance: Ld
+---
 
-Curvature:
+## **6. Path Following**
 
-κ = 2 sin(α) / Ld
+Instead of discrete waypoints, the vehicle follows a continuous path.
 
-Small lookahead:
-- More accurate
-- More oscillation
+### Metrics:
+- **Cross-Track Error**: Lateral error perpendicular to the desired path.
+- **Along-Track Progress**: How much progress is made along the path.
+- **Heading Error**: Difference in vehicle heading and desired heading.
 
-Large lookahead:
-- Smoother
-- Cuts corners
+---
 
-## 8. Proportional Navigation
+## **7. Pure Pursuit**
 
-Turn proportional to line-of-sight rate.
+A simple and robust path-following algorithm.
 
-ψ̇ = N(Vc λ̇)/V
+### Definitions:
+- **Lookahead Distance (\(L_d\))**: Determines how far ahead the vehicle should target on the path.
 
-Used for interception and collision avoidance.
+### Curvature Calculation:
+\[
+\kappa = \frac{2 \sin(\alpha)}{L_d}
+\]
+Where \( \alpha \) is the angle between the vehicle's heading and the lookahead point.
 
-## 9. Dubins Paths
+**Small Lookahead**:
+- High accuracy but leads to oscillations.
 
-Respect a minimum turning radius.
+**Large Lookahead**:
+- Smoother trajectory but may cut corners.
 
-Built from:
-- Left turn
-- Right turn
-- Straight segment
+---
 
-Useful for fixed-wing aircraft and cars.
+## **8. Proportional Navigation**
 
-## 10. Smooth Trajectories
+A method for intercepting a target by turning proportionally to the rate of change of the line of sight.
 
-Trajectory consists of:
+\[
+\dot{\psi} = \frac{N \cdot V_c \cdot \dot{\lambda}}{V}
+\]
+
+Where:
+- \( \dot{\psi} \): Angular velocity of the heading.
+- \( N \): Navigation constant (gain).
+- \( V_c \): Closing velocity.
+- \( \dot{\lambda} \): Rate of change of the line of sight.
+
+---
+
+## **9. Dubins Paths**
+
+Dubins paths consist of:
+- **Left turns**
+- **Right turns**
+- **Straight segments**
+
+### Features:
+- Ensures paths respect a **minimum turning radius**, useful for fixed-wing aircraft and cars.
+
+---
+
+## **10. Smooth Trajectories**
+
+Smooth trajectories are represented by:
 - Position
 - Velocity
 - Acceleration
-- Sometimes jerk
+- (Sometimes) Jerk
 
-Smooth commands improve tracking and reduce actuator stress.
+**Benefits**:
+- Improve tracking accuracy.
+- Reduce actuator stress.
 
-## 11. Cross-Track Error
+---
 
-Distance between vehicle and desired path.
+## **11. Cross-Track Error**
 
-Common metrics:
-- Mean
-- RMS
-- Maximum
+The perpendicular distance between the vehicle and the desired path.
 
-## 12. Mission Planning
+### Common Metrics:
+- **Mean Cross-Track Error**: Average deviation over a path.
+- **RMS (Root Mean Squared)**: Magnifies larger deviations.
+- **Maximum Cross-Track Error**: Largest error over the trajectory.
 
-Optimize:
-- Distance
-- Fuel
-- Time
-- Safety
-- Obstacle clearance
+---
 
-## 13. Obstacle Avoidance
+## **12. Mission Planning**
 
-Common planners:
-- A*
-- Dijkstra
-- RRT*
-- PRM
+Mission planning optimizes for:
+- **Distance**
+- **Fuel efficiency**
+- **Time-to-goal**
+- **Safety and obstacle avoidance**
 
-## 14. Performance Metrics
+---
 
+## **13. Obstacle Avoidance**
+
+Algorithms that find collision-free paths:
+- **A***: Graph search for shortest paths.
+- **Dijkstra**: Finds shortest paths in weighted graphs.
+- **RRT***: Rapidly-exploring random tree for feasible path.
+- **PRM**: Probabilistic road maps for multi-query planning.
+
+---
+
+## **14. Performance Metrics**
+
+Evaluate guidance and trajectory generation performance with:
 - Mission completion rate
 - Time-to-goal
-- Cross-track error
 - Path length
+- Cross-track error
 - Smoothness
-- Maximum curvature
 - Control effort
 
-## 15. Monte Carlo Testing
+---
 
-Randomize:
-- Start location
-- Goal
-- Wind
-- Noise
-- Speed
-- Turn limits
+## **15. Monte Carlo Testing**
 
-Measure robustness over hundreds of missions.
+Simulate hundreds of missions with randomized variables:
+- Start and goal locations
+- Environmental factors (e.g., wind)
+- Noise levels
+- Speed and turn limits
 
-## 16. AI and Guidance
+**Purpose**: Assess system robustness under varying conditions.
 
-Classical guidance determines how to follow a path.
+---
 
-AI often determines which path should be followed.
+## **16. AI and Guidance**
 
-Together they form the basis of modern autonomous systems.
+- **Classical Guidance**: Determines how to follow a path.
+- **Artificial Intelligence**: Selects the path to follow and optimizes guidance dynamically.
+- Combined, these form the core of modern autonomous systems.
 
-## Key Takeaways
+---
 
-- Navigation estimates state.
-- Guidance generates the path.
-- Control executes the path.
-- Pure Pursuit is a simple, robust path follower.
-- Proportional Navigation solves interception.
-- Dubins paths respect turning constraints.
-- Cross-track error is a key performance metric.
-- Monte Carlo testing measures robustness.
+## **Key Takeaways**
+
+- **Navigation**: Estimates state (e.g., position/velocity).
+- **Guidance**: Generates a desired trajectory or path.
+- **Control**: Executes actions to follow the trajectory.
+- **Pure Pursuit**: Effective for tracking paths with simple tuning.
+- **Proportional Navigation**: Ideal for interception problems.
+- **Dubins Paths**: Respect turning constraints for vehicles.
+- **Monte Carlo Testing**: Measures robustness and reliability.
