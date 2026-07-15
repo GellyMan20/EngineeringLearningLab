@@ -1,9 +1,20 @@
+# Purpose:
+# This script simulates the effects of GPS noise, outliers, and dropouts on object trajectory data. 
+# It generates a true trajectory for an object moving in two dimensions and introduces simulated errors 
+# (random noise, outliers, and dropouts) to mimic real-world GPS measurement imperfections. 
+# The script illustrates how these errors impact the accuracy of the estimated trajectory 
+# compared to the true trajectory. The results are visualized using plots to highlight the differences.
+
 # Import necessary libraries
 import numpy as np  # For numerical operations and random data generation
 import matplotlib.pyplot as plt  # For data visualization (plotting graphs)
 
 # Main function
 def main():
+    # Purpose:
+    # Generates and visualizes a simulated "true" trajectory of an object and contrasts it
+    # with noisy and error-prone GPS data, including the effects of noise, outliers, and dropouts.
+    
     # Initialize a random number generator with seed 2 for reproducibility
     rng = np.random.default_rng(2)
     
@@ -40,10 +51,10 @@ def main():
     # Plot the true trajectory and the simulated noisy GPS data
     plt.figure()  # Create a new plot
     plt.plot(tx, ty, label='Truth')  # Plot the true trajectory (ground truth)
-    plt.scatter(gx, gy, s=10, label='GPS')  # Scatter plot for GPS data points
+    plt.scatter(gx, gy, s=10, label='GPS')  # Scatter plot for noisy GPS data points
     plt.title('GPS Noise, Outliers, Dropouts')  # Set the plot title
     plt.axis('equal')  # Equalize axis scaling for better visualization
-    plt.grid(True)  # Add a grid to the plot
+    plt.grid(True)  # Add a grid to the plot for clarity
     plt.legend()  # Display plot legend to differentiate signals
     plt.show()  # Show the plot
 
