@@ -1,64 +1,85 @@
-import numpy as np
-import matplotlib.pyplot as plt
+"""
+Project: PID Auto-Tuner  
+Purpose:
+This script designs and simulates a **PID (Proportional-Integral-Derivative) controller auto-tuner** using grid search and an objective scoring function. It automatically determines the optimal set of PID gains (\( K_p \), \( K_i \), \( K_d \)) that minimize the error between the desired and actual output while penalizing overshoot and control effort.
 
+Key Concepts:
+- **Automatic PID Tuning**: Finds suitable gains for a PID controller to achieve robust and efficient system performance.
+- **Grid Search**: Iterates through combinations of PID gains within specified ranges to find the best-performing configuration.
+- **Objective Function**: Quantifies control quality based on output error, overshoot, and control effort.
+- **Simulation-Based Tuning**: Evaluates PID gains by simulating system dynamics for each gain set.
+
+Applications:
+- **Control Systems Optimization**: Eliminates the manual trial-and-error process for tuning PID controllers.
+- **Robotics and Automation**: Translates to autonomous tuning of motor and actuator controllers.
+- **Engineering Education**: Provides a practical demonstration of automated controller design.
+"""
+
+# Import necessary libraries
+import numpy as np  # For numerical computations
+import matplotlib.pyplot as plt  # For plotting simulation results
+
+# Define the PID controller class
 class PID:
     def __init__(self, kp, ki, kd, output_limits=(-1e9, 1e9)):
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
-        self.output_limits = output_limits
-        self.integral = 0.0
-        self.prev_error = 0.0
+        """
+        Initializes the PID controller.
+
+        Parameters:
+            kp (float): Proportional gain.
+            ki (float): Integral gain.
+            kd (float): Derivative gain.
+            output_limits (tuple): Output limits for the control signal (default: unlimited).
+        """
+        self.kp = kp  # Proportional gain
+        self.ki = ki  # Integral gain
+        self.kd = kd  # Derivative gain
+        self.output_limits = output_limits  # Clamp control output within defined limits
+        self.integral = 0.0  # Accumulator for integral term
+        self.prev_error = 0.0  # Tracks previous error for derivative calculation
 
     def update(self, error, dt):
+        """
+        Updates the PID control output based on the current error and time step.
+
+        Parameters:
+            error (float): The difference between target and actual system state.
+            dt (float): Time step for integration and differentiation.
+
+        Returns:
+            float: Control output (clamped within output limits).
+        """
+        # Update integral term
         self.integral += error * dt
+
+        # Compute derivative term
         derivative = (error - self.prev_error) / dt
+
+        # Update previous error for the next step
         self.prev_error = error
+
+        # Calculate PID output
         u = self.kp * error + self.ki * self.integral + self.kd * derivative
+
+        # Clamp output within limits
         return float(np.clip(u, self.output_limits[0], self.output_limits[1]))
 
-"""
-PID Auto-Tuner
-Learn: gain recommendation using grid search and objective functions.
-"""
+# Function to simulate system performance for given PID gains
 def simulate(kp, ki, kd, return_series=False):
-    dt = 0.01
-    t = np.arange(0, 12, dt)
-    x, v, target = 0.0, 0.0, 1.0
-    pid = PID(kp, ki, kd, output_limits=(-20, 20))
-    xs, us = [], []
-    for _ in t:
-        u = pid.update(target - x, dt)
-        v += (u - 0.8*v - x)*dt
-        x += v*dt
-        xs.append(x); us.append(u)
-    xs, us = np.array(xs), np.array(us)
-    score = np.mean(abs(target-xs)) + 2*max(0, np.max(xs)-target) + 0.02*np.mean(abs(us))
-    if return_series:
-        return score, t, xs, us
-    return score
+    """
+    Simulates the dynamics of a system controlled by PID under given gains.
 
-def main():
-    best = None
-    for kp in np.linspace(1, 10, 10):
-        for ki in np.linspace(0, 2, 5):
-            for kd in np.linspace(0, 5, 8):
-                score = simulate(kp, ki, kd)
-                if best is None or score < best[0]:
-                    best = (score, kp, ki, kd)
-    score, kp, ki, kd = best
-    print(f"Best score: {score:.4f}")
-    print(f"Recommended gains: Kp={kp:.2f}, Ki={ki:.2f}, Kd={kd:.2f}")
-    _, t, xs, _ = simulate(kp, ki, kd, True)
-    plt.figure()
-    plt.plot(t, xs, label="Output")
-    plt.axhline(1, linestyle="--", label="Target")
-    plt.title("PID Auto-Tuner Best Response")
-    plt.xlabel("Time [s]")
-    plt.ylabel("Output")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
+    Parameters:
+        kp (float): Proportional gain.
+        ki (float): Integral gain.
+        kd (float): Derivative gain.
+        return_series (bool): If True, returns full time series data (default: False).
 
-if __name__ == "__main__":
-    main()
+    Returns:
+        score (float): Performance score based on objective function.
+        t (ndarray): Time series (if `return_series` is True).
+        xs (ndarray): Output values (if `return_series` is True).
+        us (ndarray): Control signals (if `return_series` is True).
+    """
+    # Simulation parameters
+    dt =
