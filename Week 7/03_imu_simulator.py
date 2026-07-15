@@ -1,16 +1,27 @@
+# Purpose:
+# This script simulates the effects of noise and drift on accelerometer and gyroscope signals.
+# It generates "true" signals for an accelerometer (based on a sine wave) and a gyroscope (based on a cosine wave),
+# then introduces simulated measurement errors such as random noise and cumulative drift to model real-world sensor behavior.
+# The script visualizes and compares the true signals with the noisy, drift-affected measured signals to highlight the impact 
+# of errors in sensor-based motion tracking systems.
+
 # Import necessary libraries
 import numpy as np  # For numerical operations, including random number generation
 import matplotlib.pyplot as plt  # For visualization through plotting graphs
 
 # Main function
 def main():
+    # Purpose:
+    # Simulates both 'true' and noisy accelerometer and gyroscope signals, introducing drift and noise.
+    # Compares and visualizes these signals to demonstrate how sensor imperfections affect measurements.
+    
     # Initialize a random number generator with a fixed seed for reproducibility
     rng = np.random.default_rng(3)  # Seed ensures consistent random values across runs
     
     # Configure time parameters
     dt = 0.01  # Time step (interval of sampling)
     t = np.arange(0, 40, dt)  # Create an array of time values from 0 to 40 seconds in increments of 0.01
-
+    
     # Define the 'true' accelerometer and gyroscope signal (ground truth)
     ta = 0.8 * np.sin(0.4 * t)  # True accelerometer signal as a sine wave
     tg = 0.15 * np.cos(0.25 * t)  # True gyroscope signal as a cosine wave
