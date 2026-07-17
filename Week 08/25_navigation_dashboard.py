@@ -1,4 +1,0 @@
-import numpy as np
-import matplotlib.pyplot as plt
-rng=np.random.default_rng(25); dt=.05; t=np.arange(0,60,dt); ax=.1*np.sin(.2*t); ay=.08*np.cos(.15*t); vx=np.cumsum(ax)*dt; vy=np.cumsum(ay)*dt; px=np.cumsum(vx)*dt; py=np.cumsum(vy)*dt; ex=px+rng.normal(0,.5,len(t)); ey=py+rng.normal(0,.5,len(t)); err=np.hypot(ex-px,ey-py)
-fig,axs=plt.subplots(2,2,figsize=(10,7)); axs[0,0].plot(px,py,label='Truth'); axs[0,0].plot(ex,ey,label='Estimate'); axs[0,0].legend(); axs[0,0].grid(); axs[0,0].set_title('Trajectory'); axs[0,1].plot(t,err); axs[0,1].grid(); axs[0,1].set_title('Position Error'); axs[1,0].plot(t,vx,label='Vx'); axs[1,0].plot(t,vy,label='Vy'); axs[1,0].legend(); axs[1,0].grid(); axs[1,0].set_title('Velocity'); axs[1,1].hist(err,bins=25); axs[1,1].grid(); axs[1,1].set_title('Error Distribution'); fig.tight_layout(); plt.show()
