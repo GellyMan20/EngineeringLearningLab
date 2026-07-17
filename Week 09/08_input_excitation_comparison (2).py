@@ -1,11 +1,20 @@
-"""
-Compare identification quality for weak vs rich input excitation.
+# Project 08 — Input Excitation Comparison
+# Purpose:
+# This script compares parameter estimates obtained from weak and rich excitation signals to demonstrate why informative telemetry matters.
+#
+# Key Concepts:
+# - Persistent excitation
+# - Experiment design
+# - Parameter reliability
+# - Telemetry quality
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Persistent excitation
-- Why telemetry content matters
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
 
 
@@ -20,15 +29,19 @@ def identify(u, rng):
         v[k] = v[k-1] + a*dt
 
     measured_v = v + rng.normal(0, 0.04, len(v))
+# Estimate acceleration numerically from the measured velocity history.
     measured_a = np.gradient(measured_v, dt)
 
     phi = np.column_stack((u, measured_v))
+# Solve for the parameter values that minimize the total squared prediction error.
     alpha, beta = np.linalg.lstsq(phi, measured_a, rcond=None)[0]
     mass = 1 / alpha
     drag = -beta * mass
     return mass, drag
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(8)
     n = 2000
@@ -44,5 +57,7 @@ def main():
     print("Rich excitation estimate (mass, drag):", rich_est)
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

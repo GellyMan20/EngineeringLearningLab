@@ -1,12 +1,22 @@
-"""
-Estimate frequency response from sinusoidal input/output experiments.
+# Project 11 — Frequency Response Identification
+# Purpose:
+# This script excites a system with sinusoids at multiple frequencies and estimates the corresponding gain and phase response.
+#
+# Key Concepts:
+# - Frequency-domain identification
+# - Sinusoidal excitation
+# - Gain estimation
+# - Phase estimation
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Frequency-domain identification
-- Gain and phase estimation
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import Matplotlib to visualize telemetry, model predictions, residuals, and trade studies.
 import matplotlib.pyplot as plt
 
 
@@ -18,6 +28,8 @@ def simulate_first_order(u, dt, gain=2.0, tau=1.5):
     return y
 
 
+
+# Main project workflow
 def main():
     dt = 0.01
     frequencies = np.logspace(-1, 1, 18)
@@ -39,22 +51,30 @@ def main():
         gains.append(gain_est)
         phases.append(phase_est)
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.semilogx(frequencies, 20*np.log10(gains))
     plt.title("Estimated Frequency Response Magnitude")
     plt.xlabel("Frequency [rad/s]")
     plt.ylabel("Magnitude [dB]")
     plt.grid(True, which="both")
+# Display the completed visualization.
     plt.show()
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.semilogx(frequencies, phases)
     plt.title("Estimated Frequency Response Phase")
     plt.xlabel("Frequency [rad/s]")
     plt.ylabel("Phase [deg]")
     plt.grid(True, which="both")
+# Display the completed visualization.
     plt.show()
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

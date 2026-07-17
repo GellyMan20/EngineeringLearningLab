@@ -1,15 +1,27 @@
-"""
-Detect anomalies using model residuals.
+# Project 19 — Residual-Based Anomaly Detection
+# Purpose:
+# This script detects abnormal system behavior by monitoring the difference between measured output and model prediction.
+#
+# Key Concepts:
+# - Residual monitoring
+# - Threshold detection
+# - Fault detection
+# - Model-based anomaly detection
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Residual-based monitoring
-- AI-assisted anomaly detection concept
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import Matplotlib to visualize telemetry, model predictions, residuals, and trade studies.
 import matplotlib.pyplot as plt
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(19)
     n = 1200
@@ -25,6 +37,7 @@ def main():
 
     Phi = np.column_stack((y[:599],u[:599]))
     target = y[1:600]
+# Solve for the parameter values that minimize the total squared prediction error.
     theta = np.linalg.lstsq(Phi,target,rcond=None)[0]
 
     prediction = theta[0]*y[:-1] + theta[1]*u[:-1]
@@ -36,6 +49,8 @@ def main():
 
     print(f"Anomaly samples detected: {flags.sum()}")
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.plot(residual,label="Residual")
     plt.axhline(threshold,linestyle="--",label="Threshold")
@@ -46,8 +61,11 @@ def main():
     plt.ylabel("Residual")
     plt.grid(True)
     plt.legend()
+# Display the completed visualization.
     plt.show()
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

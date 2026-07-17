@@ -1,12 +1,20 @@
-"""
-Fit on one dataset and validate on another.
+# Project 10 — Training and Validation Split
+# Purpose:
+# This script estimates a model on one dataset and evaluates it on an independent dataset to measure generalization.
+#
+# Key Concepts:
+# - Training data
+# - Validation data
+# - Generalization
+# - RMSE
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Training vs validation
-- Generalization
-- Overfitting avoidance
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
 
 
@@ -28,9 +36,12 @@ def fit_arx(u, y):
     for k in range(2, len(y)):
         Phi.append([y[k-1], y[k-2], u[k-1], u[k-2]])
         Y.append(y[k])
+# Solve for the parameter values that minimize the total squared prediction error.
     return np.linalg.lstsq(np.asarray(Phi), np.asarray(Y), rcond=None)[0]
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(10)
     true_theta = np.array([1.35, -0.48, 0.22, 0.10])
@@ -46,11 +57,14 @@ def main():
     theta_est = fit_arx(u_train, y_train)
     y_pred = simulate(theta_est, u_val, y0=(y_val[0], y_val[1]))
 
+# Compute root-mean-square error as a summary of model prediction accuracy.
     rmse = np.sqrt(np.mean((y_val - y_pred)**2))
 
     print("Estimated parameters:", theta_est)
     print(f"Validation RMSE: {rmse:.4f}")
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

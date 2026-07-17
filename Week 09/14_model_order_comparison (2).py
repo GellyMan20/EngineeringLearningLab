@@ -1,12 +1,20 @@
-"""
-Compare ARX model orders using validation error.
+# Project 14 — Model Order Comparison
+# Purpose:
+# This script compares ARX models of different orders using validation error.
+#
+# Key Concepts:
+# - Model order selection
+# - Underfitting
+# - Overfitting
+# - Validation RMSE
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Model complexity
-- Underfitting and overfitting
-- Order selection
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
 
 
@@ -23,6 +31,8 @@ def make_features(y, u, order):
     return np.asarray(rows), np.asarray(targets)
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(14)
     n = 1600
@@ -38,12 +48,16 @@ def main():
         Phi, Y = make_features(y, u, order)
         train_rows = split - order
 
+# Solve for the parameter values that minimize the total squared prediction error.
         theta = np.linalg.lstsq(Phi[:train_rows], Y[:train_rows], rcond=None)[0]
         pred = Phi[train_rows:] @ theta
+# Compute root-mean-square error as a summary of model prediction accuracy.
         rmse = np.sqrt(np.mean((Y[train_rows:] - pred)**2))
 
         print(f"Order {order}: validation RMSE={rmse:.5f}")
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

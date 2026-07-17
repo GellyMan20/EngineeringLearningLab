@@ -1,14 +1,22 @@
-"""
-Mini dynamics-identification tool.
+# Project 20 — Dynamics Identification Tool
+# Purpose:
+# This capstone script generates telemetry, estimates vehicle mass and drag, validates the model on a different input profile, and reports model error.
+#
+# Key Concepts:
+# - End-to-end identification
+# - Training telemetry
+# - Validation telemetry
+# - Performance reporting
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Capabilities:
-- Generate telemetry
-- Estimate mass and drag
-- Validate model
-- Report RMSE
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import Matplotlib to visualize telemetry, model predictions, residuals, and trade studies.
 import matplotlib.pyplot as plt
 
 
@@ -21,14 +29,18 @@ def simulate(mass, drag, force, dt):
 
 
 def estimate(force, measured_velocity, dt):
+# Estimate acceleration numerically from the measured velocity history.
     acceleration=np.gradient(measured_velocity,dt)
     Phi=np.column_stack((force,measured_velocity))
+# Solve for the parameter values that minimize the total squared prediction error.
     alpha,beta=np.linalg.lstsq(Phi,acceleration,rcond=None)[0]
     mass=1/alpha
     drag=-beta*mass
     return mass,drag
 
 
+
+# Main project workflow
 def main():
     rng=np.random.default_rng(20)
     dt=0.05
@@ -47,12 +59,15 @@ def main():
     truth_val=simulate(true_mass,true_drag,force_val,dt)
     model_val=simulate(mass_est,drag_est,force_val,dt)
 
+# Compute root-mean-square error as a summary of model prediction accuracy.
     rmse=np.sqrt(np.mean((truth_val-model_val)**2))
 
     print(f"Estimated mass: {mass_est:.2f} kg")
     print(f"Estimated drag: {drag_est:.2f}")
     print(f"Validation RMSE: {rmse:.4f} m/s")
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.plot(t,truth_val,label="Validation truth")
     plt.plot(t,model_val,label="Identified model")
@@ -61,8 +76,11 @@ def main():
     plt.ylabel("Velocity [m/s]")
     plt.grid(True)
     plt.legend()
+# Display the completed visualization.
     plt.show()
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

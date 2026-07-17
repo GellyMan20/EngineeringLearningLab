@@ -1,14 +1,22 @@
-"""
-Perform residual analysis after model fitting.
+# Project 07 — Residual Analysis
+# Purpose:
+# This script checks whether model prediction errors are unbiased and approximately uncorrelated, helping reveal missing dynamics.
+#
+# Key Concepts:
+# - Residual statistics
+# - Autocorrelation
+# - Model adequacy
+# - Underfitting detection
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Residual mean
-- Residual variance
-- Autocorrelation
-- Model adequacy
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import Matplotlib to visualize telemetry, model predictions, residuals, and trade studies.
 import matplotlib.pyplot as plt
 
 
@@ -21,6 +29,8 @@ def autocorrelation(x, max_lag):
     return np.array(result)
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(7)
     n = 1000
@@ -33,6 +43,7 @@ def main():
     # Intentionally underfit with first-order model.
     Phi = np.column_stack((y[1:-1], u[1:-1]))
     target = y[2:]
+# Solve for the parameter values that minimize the total squared prediction error.
     theta = np.linalg.lstsq(Phi, target, rcond=None)[0]
     prediction = Phi @ theta
     residual = target - prediction
@@ -42,22 +53,30 @@ def main():
 
     acf = autocorrelation(residual, 40)
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.plot(residual)
     plt.title("Residual Sequence")
     plt.xlabel("Sample")
     plt.ylabel("Residual")
     plt.grid(True)
+# Display the completed visualization.
     plt.show()
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.stem(np.arange(len(acf)), acf)
     plt.title("Residual Autocorrelation")
     plt.xlabel("Lag")
     plt.ylabel("Autocorrelation")
     plt.grid(True)
+# Display the completed visualization.
     plt.show()
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

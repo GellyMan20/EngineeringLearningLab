@@ -1,16 +1,27 @@
-"""
-Recursive least squares for online parameter estimation.
+# Project 13 — Recursive Least Squares
+# Purpose:
+# This script estimates parameters online as new telemetry arrives and uses a forgetting factor to track changing dynamics.
+#
+# Key Concepts:
+# - Online identification
+# - Recursive estimation
+# - Forgetting factors
+# - Time-varying systems
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Online identification
-- Forgetting factor
-- Time-varying parameter tracking
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import Matplotlib to visualize telemetry, model predictions, residuals, and trade studies.
 import matplotlib.pyplot as plt
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(13)
     n = 1200
@@ -38,6 +49,8 @@ def main():
 
     history = np.array(history)
 
+
+# Create a new figure for this result.
     plt.figure()
     plt.plot(a_true[1:], label="True a")
     plt.plot(history[:,0], label="Estimated a")
@@ -46,8 +59,11 @@ def main():
     plt.ylabel("Parameter")
     plt.grid(True)
     plt.legend()
+# Display the completed visualization.
     plt.show()
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

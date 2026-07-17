@@ -1,11 +1,20 @@
-"""
-Validate an identified model across multiple operating regions.
+# Project 24 — Operating Region Validation
+# Purpose:
+# This script validates a locally identified linear model across low, medium, and high operating regions.
+#
+# Key Concepts:
+# - Operating envelopes
+# - Local models
+# - Extrapolation risk
+# - Regional validation
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- Local vs global model validity
-- Extrapolation risk
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
 
 
@@ -21,8 +30,10 @@ def simulate_nonlinear(force,dt):
 
 
 def fit_linear(force,v,dt):
+# Estimate acceleration numerically from the measured velocity history.
     a=np.gradient(v,dt)
     Phi=np.column_stack((force,v))
+# Solve for the parameter values that minimize the total squared prediction error.
     alpha,beta=np.linalg.lstsq(Phi,a,rcond=None)[0]
     mass=1/alpha
     drag=-beta*mass
@@ -36,6 +47,8 @@ def simulate_linear(force,dt,mass,drag):
     return v
 
 
+
+# Main project workflow
 def main():
     dt=0.05
     t=np.arange(0,50,dt)
@@ -54,9 +67,12 @@ def main():
     for name,force in regions.items():
         truth=simulate_nonlinear(force,dt)
         pred=simulate_linear(force,dt,mass,drag)
+# Compute root-mean-square error as a summary of model prediction accuracy.
         rmse=np.sqrt(np.mean((truth-pred)**2))
         print(f"{name:>6} region RMSE: {rmse:.4f}")
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

@@ -1,15 +1,22 @@
-"""
-Estimate nonlinear quadratic drag using scipy.optimize.
+# Project 12 — Nonlinear Parameter Estimation
+# Purpose:
+# This script uses SciPy nonlinear least squares to estimate mass, linear drag, and quadratic drag.
+#
+# Key Concepts:
+# - Nonlinear least squares
+# - SciPy optimization
+# - Quadratic drag
+# - Bounded estimation
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Model:
-    m*dv/dt = u - c1*v - c2*v*|v|
-
-Learn:
-- Nonlinear least squares
-- SciPy optimization
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import SciPy tools for optimization or numerical system analysis.
 from scipy.optimize import least_squares
 
 
@@ -23,6 +30,8 @@ def simulate(params, force, dt):
     return v
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(12)
     dt = 0.05
@@ -35,6 +44,7 @@ def main():
     def residual(params):
         return simulate(params, force, dt) - measured
 
+# Run bounded nonlinear optimization to minimize the model-to-telemetry mismatch.
     result = least_squares(
         residual,
         x0=np.array([900.0, 30.0, 1.0]),
@@ -46,5 +56,7 @@ def main():
     print("Cost:", result.cost)
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()

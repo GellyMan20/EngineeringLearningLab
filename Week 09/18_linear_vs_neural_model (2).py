@@ -1,16 +1,29 @@
-"""
-Compare linear ARX and neural-network models.
+# Project 18 — Linear versus Neural Model
+# Purpose:
+# This script compares a linear model with a neural-network model on nonlinear dynamics.
+#
+# Key Concepts:
+# - Linear models
+# - Neural models
+# - Interpretability
+# - Validation comparison
+#
+# Learning Outcomes:
+# - Understand the identification problem and its engineering value.
+# - Follow how telemetry is converted into a mathematical model.
+# - Interpret estimation and validation results.
+# - Recognize assumptions, limitations, and possible extensions.
 
-Learn:
-- White-box vs black-box tradeoffs
-- Nonlinearity capture
-"""
-
+# Import NumPy for arrays, matrix operations, random sampling, and numerical calculations.
 import numpy as np
+# Import scikit-learn tools for neural-network modeling and validation metrics.
 from sklearn.neural_network import MLPRegressor
+# Import scikit-learn tools for neural-network modeling and validation metrics.
 from sklearn.metrics import mean_squared_error
 
 
+
+# Main project workflow
 def main():
     rng = np.random.default_rng(18)
     n = 2200
@@ -33,6 +46,7 @@ def main():
     X=np.asarray(X); Y=np.asarray(Y)
     split=1600
 
+# Solve for the parameter values that minimize the total squared prediction error.
     theta=np.linalg.lstsq(X[:split],Y[:split],rcond=None)[0]
     linear_pred=X[split:]@theta
 
@@ -47,5 +61,7 @@ def main():
     print(f"Neural RMSE: {nn_rmse:.5f}")
 
 
+
+# Entry point: run the project when this file is executed directly.
 if __name__ == "__main__":
     main()
